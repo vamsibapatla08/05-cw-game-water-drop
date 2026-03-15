@@ -29,16 +29,23 @@ const losingMessages = [
   "So close. Reset and catch a few more good drops.",
 ];
 
+const confettiColors = ["#FFC907", "#2E9DF7", "#8BD1CB", "#4FCB53", "#FF902A", "#F5402C"];
+
 let bucketX = 0;
 let bucketTargetX = 0;
 let bucketAnimationFrame = null;
+let activePointerId = null;
 const bucketStep = 28;
 const bucketSmoothing = 0.22;
+let confettiLayer = null;
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
+gameContainer.addEventListener("pointerdown", startPointerControl);
 gameContainer.addEventListener("pointermove", moveBucketWithPointer);
+gameContainer.addEventListener("pointerup", stopPointerControl);
+gameContainer.addEventListener("pointercancel", stopPointerControl);
 document.addEventListener("keydown", moveBucketWithKeyboard);
 window.addEventListener("resize", centerBucket);
 
@@ -53,6 +60,7 @@ function startGame() {
   updateScoreDisplay();
   updateTimeDisplay();
   clearEndMessage();
+  clearConfetti();
   centerBucket();
 
   // Spawn drops in short ticks so drop count can scale with difficulty
@@ -168,6 +176,7 @@ function updateTimeDisplay() {
 
 function endGame() {
   gameRunning = false;
+  activePointerId = null;
   clearInterval(dropMaker);
   clearInterval(gameTimer);
   clearInterval(collisionChecker);
@@ -181,6 +190,7 @@ function endGame() {
 
 function resetGame() {
   gameRunning = false;
+  activePointerId = null;
   clearInterval(dropMaker);
   clearInterval(gameTimer);
   clearInterval(collisionChecker);
@@ -191,6 +201,7 @@ function resetGame() {
   updateScoreDisplay();
   updateTimeDisplay();
   clearEndMessage();
+  clearConfetti();
   centerBucket();
 
   // Clear any drops currently visible in the game area
@@ -199,10 +210,29 @@ function resetGame() {
 
 function moveBucketWithPointer(event) {
   if (!gameRunning) return;
+  if (activePointerId !== null && event.pointerId !== activePointerId) return;
 
   const containerRect = gameContainer.getBoundingClientRect();
   const targetX = event.clientX - containerRect.left - bucket.offsetWidth / 2;
   setBucketTarget(targetX);
+}
+
+function startPointerControl(event) {
+  if (!gameRunning) return;
+
+  activePointerId = event.pointerId;
+  gameContainer.setPointerCapture(event.pointerId);
+  moveBucketWithPointer(event);
+}
+
+function stopPointerControl(event) {
+  if (activePointerId !== event.pointerId) return;
+
+  if (gameContainer.hasPointerCapture(event.pointerId)) {
+    gameContainer.releasePointerCapture(event.pointerId);
+  }
+
+  activePointerId = null;
 }
 
 function moveBucketWithKeyboard(event) {
@@ -299,6 +329,12 @@ function showEndMessage() {
   gameMessage.textContent = finalMessage;
   gameMessage.classList.remove("win", "lose");
   gameMessage.classList.add(wonRound ? "win" : "lose");
+
+  if (wonRound) {
+    launchConfetti();
+  } else {
+    clearConfetti();
+  }
 }
 
 function clearEndMessage() {
@@ -308,6 +344,67 @@ function clearEndMessage() {
 
 function getRandomMessage(messages) {
   return messages[Math.floor(Math.random() * messages.length)];
+}
+
+function launchConfetti() {
+  clearConfetti();
+
+  confettiLayer = document.createElement("div");
+  confettiLayer.style.position = "fixed";
+  confettiLayer.style.inset = "0";
+  confettiLayer.style.pointerEvents = "none";
+  confettiLayer.style.overflow = "hidden";
+  confettiLayer.style.zIndex = "9999";
+  document.body.appendChild(confettiLayer);
+
+  const pieceCount = 110;
+  for (let i = 0; i < pieceCount; i += 1) {
+    const piece = document.createElement("div");
+    const size = 6 + Math.random() * 7;
+    const drift = (Math.random() - 0.5) * 240;
+    const rotate = (Math.random() - 0.5) * 1440;
+    const duration = 1800 + Math.random() * 1400;
+    const delay = Math.random() * 450;
+
+    piece.style.position = "absolute";
+    piece.style.left = `${Math.random() * 100}vw`;
+    piece.style.top = "-14vh";
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size * (1.2 + Math.random() * 1.4)}px`;
+    piece.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    piece.style.borderRadius = `${Math.random() * 3}px`;
+    piece.style.opacity = "0.95";
+
+    confettiLayer.appendChild(piece);
+
+    const animation = piece.animate(
+      [
+        { transform: "translate3d(0, 0, 0) rotate(0deg)", opacity: 1 },
+        {
+          transform: `translate3d(${drift}px, 112vh, 0) rotate(${rotate}deg)`,
+          opacity: 0.9,
+        },
+      ],
+      {
+        duration,
+        delay,
+        easing: "cubic-bezier(0.2, 0.78, 0.25, 1)",
+        fill: "forwards",
+      }
+    );
+
+    animation.onfinish = () => piece.remove();
+  }
+
+  setTimeout(() => {
+    clearConfetti();
+  }, 3800);
+}
+
+function clearConfetti() {
+  if (!confettiLayer) return;
+  confettiLayer.remove();
+  confettiLayer = null;
 }
 
 updateScoreDisplay();
