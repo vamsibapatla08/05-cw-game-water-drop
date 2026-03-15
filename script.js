@@ -13,6 +13,7 @@ const scoreProgressFill = document.getElementById("score-progress-fill");
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
+document.getElementById("reset-btn").addEventListener("click", resetGame);
 
 function startGame() {
   // Prevent multiple games from running at once
@@ -93,6 +94,20 @@ function endGame() {
   clearInterval(gameTimer);
 
   // Remove remaining drops when the round is over
+  gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
+}
+
+function resetGame() {
+  gameRunning = false;
+  clearInterval(dropMaker);
+  clearInterval(gameTimer);
+
+  score = 0;
+  timeLeft = 30;
+  updateScoreDisplay();
+  updateTimeDisplay();
+
+  // Clear any drops currently visible in the game area
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
 }
 

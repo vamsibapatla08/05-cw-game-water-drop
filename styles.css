@@ -172,6 +172,27 @@ body {
     box-shadow: 0 6px 0 rgba(19, 19, 19, 0.18);
 }
 
+#reset-btn {
+    padding: 10px 16px;
+    background-color: #ffffff;
+    color: var(--cw-red);
+    border: 2px solid rgba(245, 64, 44, 0.55);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+    box-shadow: 0 4px 0 rgba(245, 64, 44, 0.2);
+}
+
+#reset-btn:hover {
+    background-color: rgba(245, 64, 44, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 0 rgba(245, 64, 44, 0.2);
+}
+
 .score {
     flex: 0 1 auto;  /* Don't grow, can shrink, auto basis */
     font-size: 22px;
@@ -186,27 +207,24 @@ body {
     position: absolute;
     width: 60px;  /* increased from 40px */
     height: 60px; /* increased from 40px */
-    background: radial-gradient(circle at 30% 25%, #d8f1ff 0 24%, #2E9DF7 45%, #1c7fce 100%);
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
+    background: #2E9DF7;
+    border: 2px solid #1c7fce;
+    border-radius: 50% 50% 60% 60%;
+    clip-path: polygon(50% 0%, 73% 24%, 89% 44%, 92% 61%, 84% 80%, 67% 94%, 50% 100%, 33% 94%, 16% 80%, 8% 61%, 11% 44%, 27% 24%);
     animation: dropFall linear forwards;
     transform-origin: center;
     cursor: pointer;
-    padding: 15px;  /* Add padding for larger click area */
-    margin: -15px;  /* Offset padding to maintain visual size */
-    transition: transform 0.12s ease, filter 0.12s ease;
-    box-shadow: 0 6px 12px rgba(46, 157, 247, 0.35);
+    transition: transform 0.12s ease;
 }
 
 .water-drop:hover {
-    transform: scale(1.08);  /* Slight grow effect on hover */
-    filter: brightness(1.08);
+    transform: scale(1.05);
 }
 
 .dirty-drop,
 .bad-drop {
-    background: radial-gradient(circle at 30% 25%, #ffe5cb 0 20%, var(--cw-orange) 45%, var(--cw-red) 100%);
-    box-shadow: 0 6px 12px rgba(245, 64, 44, 0.35);
+    background: var(--cw-red);
+    border-color: #c63524;
 }
 
 .game-title {
