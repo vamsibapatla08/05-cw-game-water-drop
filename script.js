@@ -4,8 +4,11 @@ let dropMaker; // Will store our timer that creates drops regularly
 let gameTimer;
 let collisionChecker;
 let score = 0;
-let timeLeft = 30;
+const gameDurationSeconds = 30;
+let timeLeft = gameDurationSeconds;
 const maxProgressScore = 20;
+const spawnTickMs = 250;
+let spawnAccumulator = 0;
 
 const scoreDisplay = document.getElementById("score");
 const timeDisplay = document.getElementById("time");
@@ -27,7 +30,10 @@ const losingMessages = [
 ];
 
 let bucketX = 0;
+let bucketTargetX = 0;
+let bucketAnimationFrame = null;
 const bucketStep = 28;
+const bucketSmoothing = 0.22;
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -42,14 +48,15 @@ function startGame() {
 
   gameRunning = true;
   score = 0;
-  timeLeft = 30;
+  timeLeft = gameDurationSeconds;
+  spawnAccumulator = 0;
   updateScoreDisplay();
   updateTimeDisplay();
   clearEndMessage();
   centerBucket();
 
-  // Create new drops every second (1000 milliseconds)
-  dropMaker = setInterval(createDrop, 1000);
+  // Spawn drops in short ticks so drop count can scale with difficulty
+  dropMaker = setInterval(runDropSpawnerTick, spawnTickMs);
   gameTimer = setInterval(updateTimer, 1000);
   collisionChecker = setInterval(checkBucketCollisions, 50);
 }
@@ -62,7 +69,7 @@ function createDrop() {
   drop.className = "water-drop";
 
   // Randomly mark some drops as dirty so both drop types appear
-  const isDirtyDrop = Math.random() < 0.4;
+  const isDirtyDrop = Math.random() < getDirtyDropChance();
   if (isDirtyDrop) {
     drop.classList.add("dirty-drop");
   }
@@ -75,13 +82,12 @@ function createDrop() {
   drop.style.width = drop.style.height = `${size}px`;
 
   // Position the drop randomly across the game width
-  // Subtract 60 pixels to keep drops fully inside the container
   const gameWidth = gameContainer.offsetWidth;
-  const xPosition = Math.random() * (gameWidth - 60);
+  const xPosition = Math.random() * Math.max(gameWidth - size, 0);
   drop.style.left = xPosition + "px";
 
-  // Make drops fall for 4 seconds
-  drop.style.animationDuration = "4s";
+  // Fall speed increases over time and scales with target score rate
+  drop.style.animationDuration = `${getDropFallDurationSeconds()}s`;
   drop.style.setProperty("--drop-fall-distance", `${gameContainer.clientHeight + 30}px`);
 
   // Add the new drop to the game screen
@@ -91,6 +97,60 @@ function createDrop() {
   drop.addEventListener("animationend", () => {
     drop.remove(); // Clean up drops that weren't caught
   });
+}
+
+function runDropSpawnerTick() {
+  if (!gameRunning) return;
+
+  const dropsPerSecond = getDropsPerSecondForCurrentTime();
+  spawnAccumulator += (dropsPerSecond * spawnTickMs) / 1000;
+
+  const dropsToCreate = Math.floor(spawnAccumulator);
+  if (dropsToCreate <= 0) return;
+
+  spawnAccumulator -= dropsToCreate;
+  for (let i = 0; i < dropsToCreate; i += 1) {
+    createDrop();
+  }
+}
+
+function getDropsPerSecondForCurrentTime() {
+  const baseDropsPerSecond = (maxProgressScore / gameDurationSeconds) * 2.75;
+  const dropsPerSecond = baseDropsPerSecond * getCurrentPhaseMultiplier();
+  return clamp(dropsPerSecond, 1.1, 6);
+}
+
+function getDropFallDurationSeconds() {
+  let phaseBaseDuration = 3.9;
+
+  if (timeLeft <= gameDurationSeconds / 3) {
+    phaseBaseDuration = 2.1;
+  } else if (timeLeft <= (gameDurationSeconds * 2) / 3) {
+    phaseBaseDuration = 2.9;
+  }
+
+  return clamp(phaseBaseDuration / getScoreRateDifficultyScale(), 1.5, 4.6);
+}
+
+function getCurrentPhaseMultiplier() {
+  if (timeLeft <= gameDurationSeconds / 3) return 1.85;
+  if (timeLeft <= (gameDurationSeconds * 2) / 3) return 1.35;
+  return 1;
+}
+
+function getDirtyDropChance() {
+  if (timeLeft <= gameDurationSeconds / 3) return 0.52;
+  if (timeLeft <= (gameDurationSeconds * 2) / 3) return 0.45;
+  return 0.38;
+}
+
+function getScoreRateDifficultyScale() {
+  const targetScoreRate = maxProgressScore / gameDurationSeconds;
+  return clamp(targetScoreRate * 1.5, 0.8, 1.8);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function updateTimer() {
@@ -111,6 +171,7 @@ function endGame() {
   clearInterval(dropMaker);
   clearInterval(gameTimer);
   clearInterval(collisionChecker);
+  spawnAccumulator = 0;
 
   // Remove remaining drops when the round is over
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
@@ -125,7 +186,8 @@ function resetGame() {
   clearInterval(collisionChecker);
 
   score = 0;
-  timeLeft = 30;
+  timeLeft = gameDurationSeconds;
+  spawnAccumulator = 0;
   updateScoreDisplay();
   updateTimeDisplay();
   clearEndMessage();
@@ -140,7 +202,7 @@ function moveBucketWithPointer(event) {
 
   const containerRect = gameContainer.getBoundingClientRect();
   const targetX = event.clientX - containerRect.left - bucket.offsetWidth / 2;
-  setBucketPosition(targetX);
+  setBucketTarget(targetX);
 }
 
 function moveBucketWithKeyboard(event) {
@@ -148,24 +210,56 @@ function moveBucketWithKeyboard(event) {
 
   if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
     event.preventDefault();
-    setBucketPosition(bucketX - bucketStep);
+    setBucketTarget(bucketTargetX - bucketStep);
   }
 
   if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
     event.preventDefault();
-    setBucketPosition(bucketX + bucketStep);
+    setBucketTarget(bucketTargetX + bucketStep);
   }
 }
 
-function setBucketPosition(nextX) {
-  const maxX = Math.max(0, gameContainer.clientWidth - bucket.offsetWidth);
-  bucketX = Math.max(0, Math.min(nextX, maxX));
+function setBucketPositionImmediate(nextX) {
+  bucketTargetX = clamp(nextX, 0, getBucketMaxX());
+  bucketX = bucketTargetX;
   bucket.style.left = `${bucketX}px`;
+
+  if (bucketAnimationFrame !== null) {
+    cancelAnimationFrame(bucketAnimationFrame);
+    bucketAnimationFrame = null;
+  }
+}
+
+function setBucketTarget(nextX) {
+  bucketTargetX = clamp(nextX, 0, getBucketMaxX());
+
+  if (bucketAnimationFrame === null) {
+    bucketAnimationFrame = requestAnimationFrame(animateBucketMovement);
+  }
+}
+
+function animateBucketMovement() {
+  const distance = bucketTargetX - bucketX;
+
+  if (Math.abs(distance) < 0.5) {
+    bucketX = bucketTargetX;
+    bucket.style.left = `${bucketX}px`;
+    bucketAnimationFrame = null;
+    return;
+  }
+
+  bucketX += distance * bucketSmoothing;
+  bucket.style.left = `${bucketX}px`;
+  bucketAnimationFrame = requestAnimationFrame(animateBucketMovement);
+}
+
+function getBucketMaxX() {
+  return Math.max(0, gameContainer.clientWidth - bucket.offsetWidth);
 }
 
 function centerBucket() {
-  const centeredX = (gameContainer.clientWidth - bucket.offsetWidth) / 2;
-  setBucketPosition(centeredX);
+  const centeredX = getBucketMaxX() / 2;
+  setBucketPositionImmediate(centeredX);
 }
 
 function checkBucketCollisions() {
