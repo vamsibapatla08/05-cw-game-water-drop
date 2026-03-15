@@ -24,20 +24,53 @@ Fonts:
     box-sizing: border-box;
 }
 
+:root {
+    --cw-yellow: #FFC907;
+    --cw-blue: #2E9DF7;
+    --cw-light-blue: #8BD1CB;
+    --cw-orange: #FF902A;
+    --cw-red: #F5402C;
+    --cw-ink: #131313;
+    --cw-paper: #ffffff;
+    --cw-mist: #f2f8fd;
+}
+
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
+    padding-top: 50px;
+    padding-bottom: 40px;
+    background:
+        radial-gradient(circle at 10% 15%, rgba(139, 209, 203, 0.35) 0 14%, transparent 15%),
+        radial-gradient(circle at 90% 88%, rgba(46, 157, 247, 0.2) 0 20%, transparent 21%),
+        linear-gradient(180deg, #f7fcff 0%, #ebf6ff 100%);
+    font-family: Avenir, "Avenir Next", "Segoe UI", sans-serif;
+    color: var(--cw-ink);
 }
 
 .game-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 18px;
+    width: min(920px, 96vw);
+}
+
+.title-row {
+    width: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+}
+
+.cw-logo {
+    height: 22px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(19, 19, 19, 0.12));
 }
 
 .score-panel {
@@ -45,84 +78,155 @@ body {
     justify-content: space-between;  /* Space between score and button */
     align-items: center;
     width: 800px;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px 14px;
+    background-color: var(--cw-paper);
+    border: 2px solid rgba(19, 19, 19, 0.08);
+    border-top: 6px solid var(--cw-yellow);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(19, 19, 19, 0.08);
 }
 
 .timer {
     flex: 0 1 auto;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
+    background-color: rgba(46, 157, 247, 0.08);
+    border: 1px solid rgba(46, 157, 247, 0.3);
+    border-radius: 10px;
+    padding: 8px 12px;
 }
 
 #game-container {
     width: 800px;
     height: 600px;
-    background-color: #e6f7ff;
-    border: 2px solid #333;
-    border-radius: 8px;
+    background:
+        linear-gradient(180deg, #f8fdff 0%, #ddf0ff 100%);
+    border: 3px solid rgba(46, 157, 247, 0.45);
+    border-radius: 16px;
     position: relative;
     overflow: hidden;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+        0 12px 28px rgba(46, 157, 247, 0.18);
+}
+
+#game-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            180deg,
+            rgba(139, 209, 203, 0.16) 0 18px,
+            transparent 18px 36px
+        );
+    opacity: 0.45;
+}
+
+.score-progress {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    bottom: 12px;
+    width: 20px;
+    border: 2px solid rgba(19, 19, 19, 0.25);
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: inset 0 2px 6px rgba(19, 19, 19, 0.12);
+}
+
+#score-progress-fill {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, var(--cw-light-blue) 0%, var(--cw-blue) 100%);
+    transition: height 0.2s ease, filter 0.2s ease;
+    filter: saturate(115%);
 }
 
 
 #start-btn {
-    padding: 8px 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
+    padding: 10px 16px;
+    background-color: var(--cw-yellow);
+    color: var(--cw-ink);
+    border: 2px solid rgba(19, 19, 19, 0.25);
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+    box-shadow: 0 4px 0 rgba(19, 19, 19, 0.18);
 }
 
 #start-btn:hover {
-    background-color: #45a049;
+    background-color: #ffd43f;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 0 rgba(19, 19, 19, 0.18);
 }
 
 .score {
     flex: 0 1 auto;  /* Don't grow, can shrink, auto basis */
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
+    background-color: rgba(255, 201, 7, 0.2);
+    border: 1px solid rgba(255, 201, 7, 0.7);
+    border-radius: 10px;
+    padding: 8px 12px;
 }
 
 .water-drop {
     position: absolute;
     width: 60px;  /* increased from 40px */
     height: 60px; /* increased from 40px */
-    background-color: #0099ff;
+    background: radial-gradient(circle at 30% 25%, #d8f1ff 0 24%, #2E9DF7 45%, #1c7fce 100%);
+    border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     animation: dropFall linear forwards;
     transform-origin: center;
     cursor: pointer;
     padding: 15px;  /* Add padding for larger click area */
     margin: -15px;  /* Offset padding to maintain visual size */
-    transition: transform 0.1s ease;  /* Smooth hover effect */
+    transition: transform 0.12s ease, filter 0.12s ease;
+    box-shadow: 0 6px 12px rgba(46, 157, 247, 0.35);
 }
 
 .water-drop:hover {
-    transform: scale(1.1);  /* Slight grow effect on hover */
+    transform: scale(1.08);  /* Slight grow effect on hover */
+    filter: brightness(1.08);
 }
 
+.dirty-drop,
 .bad-drop {
-    background-color: #ff4444;
+    background: radial-gradient(circle at 30% 25%, #ffe5cb 0 20%, var(--cw-orange) 45%, var(--cw-red) 100%);
+    box-shadow: 0 6px 12px rgba(245, 64, 44, 0.35);
 }
 
 .game-title {
-    color: #131313;
+    color: var(--cw-blue);
     font-size: 48px;
     margin-top: 0;
-    margin-bottom: 5px;  /* reduced from 20px */
+    margin-bottom: 4px;
     text-align: center;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 0 rgba(255, 201, 7, 0.35);
 }
 
 .game-tagline {
-    color: #666;
+    color: #355b7a;
     font-size: 18px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     text-align: center;
+    font-weight: 600;
 }
 
 @keyframes dropFall {
@@ -135,11 +239,42 @@ body {
 }
 
 @media (max-width: 850px) {
-    .game-wrapper, .score-panel, #game-container {
+    .game-wrapper, .title-row, .score-panel, #game-container {
         width: 95vw;
+    }
+
+    .score-panel {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .game-title {
+        font-size: 38px;
+    }
+
+    .title-row {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .cw-logo {
+        height: 26px;
+    }
+
+    .game-tagline {
+        font-size: 16px;
+        padding: 0 10px;
     }
     
     #game-container {
         height: 70vh;
+    }
+
+    .score-progress {
+        width: 16px;
+        left: 8px;
+        top: 8px;
+        bottom: 8px;
     }
 }

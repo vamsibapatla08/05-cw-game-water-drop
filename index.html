@@ -8,7 +8,10 @@
 </head>
 <body>
     <div class="game-wrapper">
-        <h1 class="game-title">Water Drop</h1>
+        <div class="title-row">
+            <h1 class="game-title">Water Drop</h1>
+            <img class="cw-logo" src="img/cw_logo-horizontal.png" alt="charity: water">
+        </div>
         <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
         <div class="score-panel">
             <div class="score">Score: <span id="score">0</span></div>
@@ -17,6 +20,9 @@
         </div>
         
         <div id="game-container">
+            <div class="score-progress" aria-hidden="true">
+                <div id="score-progress-fill"></div>
+            </div>
         </div>
     </div>
     
