@@ -1,32 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Drop Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Drop Game</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="game-wrapper">
-        <div class="title-row">
-            <h1 class="game-title">Water Drop</h1>
-            <img class="cw-logo" src="img/cw_logo-horizontal.png" alt="charity: water">
-        </div>
-        <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
-        <div class="score-panel">
-            <div class="score">Score: <span id="score">0</span></div>
-            <div class="timer">Time: <span id="time">30</span>s</div>
-            <button id="start-btn">Start Game</button>
-            <button id="reset-btn">Reset</button>
-        </div>
-        
-        <div id="game-container">
-            <div class="score-progress" aria-hidden="true">
-                <div id="score-progress-fill"></div>
-            </div>
-        </div>
+  <div class="game-wrapper">
+    <div class="title-row">
+      <h1 class="game-title">Water Drop</h1>
+      <div class="brand-mark" aria-label="Water Drop brand logo">
+        <img class="brand-icon" src="img/water-can-transparent.png" alt="Water Drop logo">
+        <span class="brand-wordmark">WATER DROP</span>
+      </div>
     </div>
-    
-    <script src="script.js"></script>
+    <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
+    <p class="brand-note">100% of public donations fund clean water projects.</p>
+    <div class="score-panel">
+      <div class="score">Score: <span id="score">0</span></div>
+      <div class="timer">Time: <span id="time">30</span>s</div>
+      <div class="action-buttons">
+        <button id="start-btn">Start Game</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="game-area">
+      <div class="score-progress" aria-hidden="true">
+        <div id="score-progress-fill"></div>
+      </div>
+      <div id="game-container">
+        <div id="bucket" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p id="game-message" class="game-message" aria-live="polite"></p>
+  </div>
+
+  <script src="script.js"></script>
 </body>
+
 </html>
