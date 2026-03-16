@@ -125,7 +125,7 @@ function runDropSpawnerTick() {
   const dropsPerSecond = getDropsPerSecondForCurrentTime();
   spawnAccumulator += (dropsPerSecond * spawnTickMs) / 1000;
 
-  const dropsToCreate = Math.floor(spawnAccumulator);
+  const dropsToCreate = Math.floor(spawnAccumulator); //lowest value 
   if (dropsToCreate <= 0) return;
 
   spawnAccumulator -= dropsToCreate;
