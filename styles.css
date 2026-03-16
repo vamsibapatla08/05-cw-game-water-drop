@@ -242,10 +242,12 @@ body {
 
 .game-area {
     position: relative;
-    width: min(var(--game-max-width), 100%);
+    width: min(calc(var(--game-max-width) + var(--progress-width) + var(--progress-gap)), 100%);
     --progress-width: 24px;
     --progress-gap: 10px;
+    --progress-offset: 20px;
     padding-left: calc(var(--progress-width) + var(--progress-gap));
+    margin-left: calc(-1 * (var(--progress-width) + var(--progress-gap)) / 2 - 16px);
 }
 
 #game-container::before {
@@ -264,7 +266,7 @@ body {
 
 .score-progress {
     position: absolute;
-    left: calc(-1 * (var(--progress-width) + var(--progress-gap)));
+    left: calc(var(--progress-gap) - var(--progress-offset));
     top: 0;
     bottom: 0;
     width: var(--progress-width);
@@ -359,6 +361,10 @@ body {
     border: 1px solid rgba(255, 201, 7, 0.7);
     border-radius: 10px;
     padding: 8px 12px;
+}
+
+#score{
+  margin-left: 6px;
 }
 
 .water-drop {
@@ -539,6 +545,12 @@ body {
     .game-area {
         --progress-width: 20px;
         --progress-gap: 8px;
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .score-progress {
+        left: 0;
     }
 
     .control-hint {
@@ -597,6 +609,7 @@ body {
         --progress-width: 16px;
         --progress-gap: 6px;
         margin-top: 10px;
+        margin-left: 0;
     }
 
     .control-hint {
