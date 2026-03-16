@@ -4,18 +4,21 @@ let dropMaker; // Will store our timer that creates drops regularly
 let gameTimer;
 let collisionChecker;
 let score = 0;
-const gameDurationSeconds = 30;
-let timeLeft = gameDurationSeconds;
 const maxProgressScore = 20;
 const spawnTickMs = 250;
+const gameDurationSeconds = 30;
+let timeLeft = gameDurationSeconds;
 let spawnAccumulator = 0;
-
 const scoreDisplay = document.getElementById("score");
 const timeDisplay = document.getElementById("time");
 const gameContainer = document.getElementById("game-container");
 const scoreProgressFill = document.getElementById("score-progress-fill");
 const bucket = document.getElementById("bucket");
 const gameMessage = document.getElementById("game-message");
+const startOverlay = document.getElementById("start-overlay");
+const startButton = document.getElementById("start-btn");
+const dirtyDropNotice = document.getElementById("dirty-drop-notice");
+const dirtyDropNoticeCloseButton = document.getElementById("dirty-drop-notice-close");
 
 const winningMessages = [
   "Great work! You helped save more clean water today.",
@@ -38,9 +41,11 @@ let activePointerId = null;
 const bucketStep = 28;
 const bucketSmoothing = 0.22;
 let confettiLayer = null;
+let hasShownDirtyDropNotice = false;
+let dirtyDropNoticeTimeoutId = null;
 
 // Wait for button click to start the game
-document.getElementById("start-btn").addEventListener("click", startGame);
+startButton.addEventListener("click", startGame);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
 gameContainer.addEventListener("pointerdown", startPointerControl);
 gameContainer.addEventListener("pointermove", moveBucketWithPointer);
@@ -49,11 +54,17 @@ gameContainer.addEventListener("pointercancel", stopPointerControl);
 document.addEventListener("keydown", moveBucketWithKeyboard);
 window.addEventListener("resize", centerBucket);
 
+if (dirtyDropNoticeCloseButton) {
+  dirtyDropNoticeCloseButton.addEventListener("click", () => hideDirtyDropNotice(true));
+}
+
 function startGame() {
   // Prevent multiple games from running at once
   if (gameRunning) return;
 
+  hideStartOverlay();
   gameRunning = true;
+  startButton.disabled = true;
   score = 0;
   timeLeft = gameDurationSeconds;
   spawnAccumulator = 0;
@@ -61,6 +72,7 @@ function startGame() {
   updateTimeDisplay();
   clearEndMessage();
   clearConfetti();
+  hideDirtyDropNotice(true);
   centerBucket();
 
   // Spawn drops in short ticks so drop count can scale with difficulty
@@ -176,6 +188,7 @@ function updateTimeDisplay() {
 
 function endGame() {
   gameRunning = false;
+  startButton.disabled = false;
   activePointerId = null;
   clearInterval(dropMaker);
   clearInterval(gameTimer);
@@ -190,6 +203,7 @@ function endGame() {
 
 function resetGame() {
   gameRunning = false;
+  startButton.disabled = false;
   activePointerId = null;
   clearInterval(dropMaker);
   clearInterval(gameTimer);
@@ -202,6 +216,8 @@ function resetGame() {
   updateTimeDisplay();
   clearEndMessage();
   clearConfetti();
+  hideDirtyDropNotice(true);
+  showStartOverlay();
   centerBucket();
 
   // Clear any drops currently visible in the game area
@@ -307,6 +323,9 @@ function checkBucketCollisions() {
 
     if (overlapsBucket) {
       const pointChange = Number(drop.dataset.pointChange || "1");
+      if (pointChange < 0) {
+        showDirtyDropNoticeOnce();
+      }
       score = Math.max(0, score + pointChange);
       updateScoreDisplay();
       drop.remove();
@@ -340,6 +359,53 @@ function showEndMessage() {
 function clearEndMessage() {
   gameMessage.textContent = "";
   gameMessage.classList.remove("win", "lose");
+}
+
+function showStartOverlay() {
+  if (!startOverlay) return;
+  startOverlay.classList.remove("hidden");
+  startOverlay.setAttribute("aria-hidden", "false");
+}
+
+function hideStartOverlay() {
+  if (!startOverlay) return;
+  startOverlay.classList.add("hidden");
+  startOverlay.setAttribute("aria-hidden", "true");
+}
+
+function showDirtyDropNoticeOnce() {
+  if (hasShownDirtyDropNotice || !dirtyDropNotice) return;
+
+  hasShownDirtyDropNotice = true;
+  hideDirtyDropNotice(true);
+  dirtyDropNotice.classList.remove("d-none");
+  requestAnimationFrame(() => dirtyDropNotice.classList.add("show"));
+
+  dirtyDropNoticeTimeoutId = setTimeout(() => {
+    hideDirtyDropNotice();
+  }, 5200);
+}
+
+function hideDirtyDropNotice(immediate = false) {
+  if (!dirtyDropNotice) return;
+
+  if (dirtyDropNoticeTimeoutId !== null) {
+    clearTimeout(dirtyDropNoticeTimeoutId);
+    dirtyDropNoticeTimeoutId = null;
+  }
+
+  dirtyDropNotice.classList.remove("show");
+
+  if (immediate) {
+    dirtyDropNotice.classList.add("d-none");
+    return;
+  }
+
+  setTimeout(() => {
+    if (!dirtyDropNotice.classList.contains("show")) {
+      dirtyDropNotice.classList.add("d-none");
+    }
+  }, 180);
 }
 
 function getRandomMessage(messages) {
@@ -409,5 +475,6 @@ function clearConfetti() {
 
 updateScoreDisplay();
 updateTimeDisplay();
+showStartOverlay();
 centerBucket();
 clearEndMessage();
