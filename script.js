@@ -7,6 +7,7 @@ let score = 0;
 const maxProgressScore = 20;
 const spawnTickMs = 250;
 const gameDurationSeconds = 30;
+const finalChallengeSeconds = 6;
 let timeLeft = gameDurationSeconds;
 let spawnAccumulator = 0;
 const scoreDisplay = document.getElementById("score");
@@ -138,28 +139,32 @@ function runDropSpawnerTick() {
 function getDropsPerSecondForCurrentTime() {
   const baseDropsPerSecond = (maxProgressScore / gameDurationSeconds) * 2.75;
   const dropsPerSecond = baseDropsPerSecond * getCurrentPhaseMultiplier();
-  return clamp(dropsPerSecond, 1.1, 6);
+  return clamp(dropsPerSecond, 1.1, 7.5);
 }
 
 function getDropFallDurationSeconds() {
   let phaseBaseDuration = 3.9;
 
-  if (timeLeft <= gameDurationSeconds / 3) {
+  if (timeLeft <= finalChallengeSeconds) {
+    phaseBaseDuration = 1.55;
+  } else if (timeLeft <= gameDurationSeconds / 3) {
     phaseBaseDuration = 2.1;
   } else if (timeLeft <= (gameDurationSeconds * 2) / 3) {
     phaseBaseDuration = 2.9;
   }
 
-  return clamp(phaseBaseDuration / getScoreRateDifficultyScale(), 1.5, 4.6);
+  return clamp(phaseBaseDuration / getScoreRateDifficultyScale(), 1.2, 4.6);
 }
 
 function getCurrentPhaseMultiplier() {
+  if (timeLeft <= finalChallengeSeconds) return 2.35;
   if (timeLeft <= gameDurationSeconds / 3) return 1.85;
   if (timeLeft <= (gameDurationSeconds * 2) / 3) return 1.35;
   return 1;
 }
 
 function getDirtyDropChance() {
+  if (timeLeft <= finalChallengeSeconds) return 0.62;
   if (timeLeft <= gameDurationSeconds / 3) return 0.52;
   if (timeLeft <= (gameDurationSeconds * 2) / 3) return 0.45;
   return 0.38;
