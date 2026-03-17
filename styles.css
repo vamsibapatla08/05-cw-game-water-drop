@@ -520,7 +520,7 @@ body {
 .control-hint {
     width: min(var(--game-max-width), 100%);
     text-align: center;
-    font-size: 14px;
+    font-size: 16px;
     color: #305d80;
     padding: 8px 10px;
     border: 1px solid rgba(46, 157, 247, 0.22);
@@ -648,10 +648,59 @@ body {
     }
 
     .game-area {
-        --progress-width: 16px;
-        --progress-gap: 6px;
+        --progress-width: 100%;
+        --progress-gap: 0px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding-left: 0;
         margin-top: 10px;
         margin-left: 0;
+    }
+
+    .score-progress {
+        position: relative;
+        left: auto;
+        top: auto;
+        bottom: auto;
+        width: 100%;
+        height: 16px;
+        order: 2;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.22) 0 12px,
+                rgba(255, 255, 255, 0.08) 12px 24px
+            ),
+            linear-gradient(90deg, rgba(25, 95, 151, 0.34) 0%, rgba(25, 95, 151, 0.12) 100%);
+    }
+
+    .score-progress::after {
+        top: -24px;
+    }
+
+    #score-progress-fill {
+        top: 0;
+        bottom: auto;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background:
+            radial-gradient(circle at 8% 50%, rgba(255, 201, 7, 0.42) 0 16%, rgba(255, 201, 7, 0) 45%),
+            repeating-linear-gradient(
+                90deg,
+                rgba(139, 209, 203, 0.36) 0 8px,
+                rgba(139, 209, 203, 0.12) 8px 16px
+            ),
+            repeating-linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.18) 0 5px,
+                rgba(255, 255, 255, 0.04) 5px 10px
+            ),
+            linear-gradient(90deg, #9edfff 0%, var(--cw-light-blue) 30%, var(--cw-blue) 68%, #1f75b8 100%);
+        transition: width 0.2s ease, filter 0.2s ease;
     }
 
     .control-hint {

@@ -52,7 +52,7 @@ gameContainer.addEventListener("pointermove", moveBucketWithPointer);
 gameContainer.addEventListener("pointerup", stopPointerControl);
 gameContainer.addEventListener("pointercancel", stopPointerControl);
 document.addEventListener("keydown", moveBucketWithKeyboard);
-window.addEventListener("resize", centerBucket);
+window.addEventListener("resize", handleWindowResize);
 
 if (dirtyDropNoticeCloseButton) {
   dirtyDropNoticeCloseButton.addEventListener("click", () => hideDirtyDropNotice(true));
@@ -95,9 +95,10 @@ function createDrop() {
   }
   drop.dataset.pointChange = isDirtyDrop ? "-1" : "1";
 
-  // Make drops different sizes for visual variety
-  const initialSize = 60;
-  const sizeMultiplier = Math.random() * 0.8 + 0.5;
+  // Use smaller drops on mobile screens so gameplay stays readable and fair
+  const isMobileScreen = window.matchMedia("(max-width: 560px)").matches;
+  const initialSize = isMobileScreen ? 44 : 60;
+  const sizeMultiplier = isMobileScreen ? Math.random() * 0.65 + 0.5 : Math.random() * 0.8 + 0.5;
   const size = initialSize * sizeMultiplier;
   drop.style.width = drop.style.height = `${size}px`;
 
@@ -337,7 +338,22 @@ function updateScoreDisplay() {
   scoreDisplay.textContent = score;
 
   const progressRatio = Math.min(score / maxProgressScore, 1);
-  scoreProgressFill.style.height = `${progressRatio * 100}%`;
+  const progressPercent = `${progressRatio * 100}%`;
+  const isMobileScreen = window.matchMedia("(max-width: 560px)").matches;
+
+  if (isMobileScreen) {
+    scoreProgressFill.style.width = progressPercent;
+    scoreProgressFill.style.height = "100%";
+    return;
+  }
+
+  scoreProgressFill.style.height = progressPercent;
+  scoreProgressFill.style.width = "100%";
+}
+
+function handleWindowResize() {
+  centerBucket();
+  updateScoreDisplay();
 }
 
 function showEndMessage() {
